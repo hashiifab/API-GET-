@@ -9,9 +9,14 @@ class UserPage extends StatefulWidget {
   State<UserPage> createState() => _UserPageState();
 }
 
-List<dynamic> users = [];
-
 class _UserPageState extends State<UserPage> {
+  List<dynamic> users = [];
+  @override
+  void initState() {
+    super.initState();
+    fetchUsers();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,31 +24,34 @@ class _UserPageState extends State<UserPage> {
         title: const Text(
           'User Page',
           style: TextStyle(
-              color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+              color: Colors.white, fontSize: 25, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: ListView.builder(
-        itemCount: users.length,
-        itemBuilder: (context, index) {
-          final user = users[index];
-          final name = user['first_name'] + " " + user['last_name'];
-          final email = user['email'];
-          final imageURL = user['avatar'];
-          return ListTile(
-            leading: ClipRRect(
-              borderRadius: BorderRadius.circular(100),
-              child: Image.network(imageURL),
+      body: users.isEmpty
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : ListView.builder(
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                final user = users[index];
+                final name = user['first_name'] + " " + user['last_name'];
+                final email = user['email'];
+                final imageURL = user['avatar'];
+                return ListTile(
+                  leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(100),
+                    child: Image.network(imageURL),
+                  ),
+                  title: Text(name),
+                  subtitle: Text(email),
+                );
+              },
             ),
-            title: Text(name),
-            subtitle: Text(email),
-            
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
+      /*  floatingActionButton: FloatingActionButton(
         onPressed: () {
           fetchUsers();
         },
@@ -52,19 +60,18 @@ class _UserPageState extends State<UserPage> {
           Icons.download,
           color: Colors.white,
         ),
-      ),
+      ), */
     );
   }
 
   void fetchUsers() async {
-    const url = 'https://random-data-api.com/api/users/random_user?size=12';
+    const url = 'https://reqres.in/api/users?page=1';
     final uri = Uri.parse(url);
     final response = await http.get(uri);
     final body = response.body;
     final json = jsonDecode(body);
     setState(() {
-      users = json;
+      users = json['data'];
     });
-    print('fetchUsers completed!');
   }
 }
